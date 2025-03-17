@@ -1,55 +1,93 @@
-# Real-time Speech Transcription and Translation
+# Live Transcription & Translation System
 
-A Python application that performs real-time speech transcription using Speechmatics API and translation using GPT-4.
+A real-time transcription and translation system using Speechmatics for transcription and GPT-4 for translation. The system supports Persian to English and Dutch translation.
 
-## Features
+## Prerequisites
 
-- Real-time speech transcription in Persian (fa)
-- Translation to multiple languages (English, Dutch)
-- Low-latency processing
-- High accuracy transcription using Speechmatics
-- Neural machine translation using GPT-4
+- Python 3.7+
+- Speechmatics API key
+- OpenAI API key
+- Working microphone
 
-## Requirements
+## Setup
 
-- Python 3.9+
-- PyAudio
-- Speechmatics API access
-- OpenAI API access
+1. Clone the repository:
+```bash
+git clone <your-repo-url>
+cd speechmatics
+```
 
-## Installation
-
-1. Clone the repository
-2. Install dependencies:
+2. Install required packages:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Set up your environment variables:
-```bash
-export SPEECHMATICS_AUTH_TOKEN="your_speechmatics_token"
-export OPENAI_API_KEY="your_openai_key"
-```
+3. Set up your API keys:
+   - Get a Speechmatics API key from [Speechmatics](https://speechmatics.com)
+   - Get an OpenAI API key from [OpenAI](https://openai.com)
 
-You can also create a `.env` file:
-```bash
-SPEECHMATICS_AUTH_TOKEN=your_speechmatics_token
-OPENAI_API_KEY=your_openai_key
+4. Update the API keys in `realtime_speechmatics_GPT.py`:
+```python
+SPEECHMATICS_AUTH_TOKEN = "your-speechmatics-key"
+openai.api_key = "your-openai-key"
 ```
 
 ## Usage
 
-Run the script:
+1. Start the transcription service:
 ```bash
 python realtime_speechmatics_GPT.py
 ```
+This will:
+- Start listening to your microphone
+- Transcribe Persian speech
+- Translate to English and Dutch
+- Save results to `data/transcriptions.csv`
 
-## Configuration
+2. Start the JSON server for vMix:
+```bash
+python run.py
+```
+This will:
+- Start a Flask server on `http://localhost:5000`
+- Provide JSON output at `/api/transcriptions`
 
-- Source language: Persian (fa)
-- Target languages: English (en), Dutch (nl)
-- Audio settings: 16kHz, 16-bit, mono
+3. In vMix:
+- Add a Web Input or Browser Source
+- Set the URL to: `http://localhost:5000/api/transcriptions`
+- The endpoint will return JSON in the format:
+```json
+{
+    "message": {
+        "original_text": "Persian text",
+        "en_translation": "English translation",
+        "nl_translation": "Dutch translation"
+    }
+}
+```
 
-## Security Note
+## Project Structure
 
-Never commit your API keys to the repository. Always use environment variables or a `.env` file (and make sure to add `.env` to your `.gitignore`). 
+```
+speechmatics/
+├── data/                  # Directory for CSV files (created automatically)
+├── app/
+│   ├── models/           # Data model for CSV operations
+│   └── views/            # Flask routes
+├── realtime_speechmatics_GPT.py  # Main transcription script
+├── run.py                # Flask server for JSON output
+└── requirements.txt      # Python dependencies
+```
+
+## Notes
+
+- The system requires a working microphone
+- Speak in Persian for transcription
+- The CSV file is created automatically in the `data` directory. Transcriptions are stored in a CSV file (`transcriptions.csv`) with the 
+following columns:
+  - timestamp: When the transcription was created
+  - original_text: The Persian text
+  - en_translation: English translation
+  - nl_translation: Dutch translation
+  - read: Boolean indicating if the transcription has been read
+- Each transcription is marked as read after being fetched by vMix 
